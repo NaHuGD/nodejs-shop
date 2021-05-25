@@ -1,0 +1,18 @@
+<%- include('../includes/header.ejs')%>
+
+<h1>产品详情</h1>
+
+<div class="jumbotron">
+
+    <div class="row"><img style="max-width: 100%;" src="<%= product.imageUrl %>" /></div>
+
+    <h1 class="display-4"><%= product.title %></h1>
+    <p class="lead"><%= product.description %></p>
+    <hr class="my-4">
+    <p>￥<%= product.price %></p>
+
+    <%- include('../includes/add-to-cart.ejs',{product}) %>
+
+</div>
+
+<%- include('../includes/footer.ejs')%>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= docTitle %></title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+
+</head>
+
+<% var activeShop,activeAddProduct,activeProductList,activeCart,activeCheckout,activeProductManage,breadcrumb,isAuthenticated; %>
+
+<body>
+    <header class="main-header">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <a class="navbar-brand" href="/">NodeJs商城</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item <% if(activeShop){%>active<%}%>">
+                        <a class="nav-link" href="/">商城</a>
+                    </li>
+
+                    <li class="nav-item <% if(activeProductList){%>active<%}%>">
+                        <a class="nav-link" href="/product-list">产品列表</a>
+                    </li>
+
+                    <% if(isAuthenticated) { %>
+                        <li class="nav-item <% if(activeCart){%>active<%}%>">
+                            <a class="nav-link" href="/cart">购物车</a>
+                        </li>
+
+                        <li class="nav-item <% if(activeCheckout){%>active<%}%>">
+                            <a class="nav-link" href="/checkout">订单管理</a>
+                        </li>
+
+                        <li class="nav-item <% if(activeAddProduct){%>active<%}%>">
+                            <a class="nav-link" href="/admin/add-product">添加产品</a>
+                        </li>
+
+                        <li class="nav-item <% if(activeProductManage){%>active<%}%>">
+                            <a class="nav-link" href="/admin/products">产品管理</a>
+                        </li>
+                    <% } %>
+                </ul>
+
+
+                <% if(!isAuthenticated) { %>
+                    <a href="/login" class="btn btn-outline-success">登入</a>
+                <% } else { %>
+                    <form action="/logout" method="post">
+                        <button class="btn btn-outline-danger ml-2">登出</button>
+                    </form>
+                <% } %>
+            </div>
+        </nav>
+
+    </header>
+
+    <% if(breadcrumb){%>
+    <%- include('./breadcrumb.ejs') %>
+    <%}%>
+    <main class=" container p-5">
