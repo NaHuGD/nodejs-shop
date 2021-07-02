@@ -26,6 +26,7 @@
     </div>
 
     <% if(editing){ %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <input type="hidden" name="productId" id="productId" value="<%= product._id %>" />
         <%}%>
     <button type="submit" class="btn btn-primary">

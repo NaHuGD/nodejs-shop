@@ -10,7 +10,6 @@ exports.getAddProduct = (req, res, next) => {
       { name: "添加产品", hasBreadcrumbUrl: false },
     ],
     editing: false,
-    isAuthenticated: req.session.isLogin,
   });
 };
 
@@ -37,7 +36,6 @@ exports.getEditProduct = (req, res, next) => {
       ],
       editing: editMode,
       product,
-      isAuthenticated: req.session.isLogin,
     });
   });
 };
@@ -102,7 +100,6 @@ exports.getProducts = (req, res, next) => {
           { name: "首页", url: "/", hasBreadcrumbUrl: true },
           { name: "产品管理", hasBreadcrumbUrl: false },
         ],
-        isAuthenticated: req.session.isLogin,
       });
     });
 };

@@ -11,7 +11,6 @@ exports.getProducts = (req, res, next) => {
         { name: "首页", url: "/", hasBreadcrumbUrl: true },
         { name: "产品中心", hasBreadcrumbUrl: false },
       ],
-      isAuthenticated: req.session.isLogin,
     });
   });
 };
@@ -27,7 +26,6 @@ exports.getIndex = (req, res, next) => {
           { name: "首页", url: "/", hasBreadcrumbUrl: true },
           { name: "商城", hasBreadcrumbUrl: false },
         ],
-        isAuthenticated: req.session.isLogin,
       });
     })
     .catch((err) => console.log(err));
@@ -47,7 +45,6 @@ exports.getCart = (req, res, next) => {
           { name: "购物车", hasBreadcrumbUrl: false },
         ],
         cartProducts: products,
-        isAuthenticated: req.session.isLogin,
       });
     });
 };
@@ -90,7 +87,6 @@ exports.getProductDetail = (req, res, next) => {
           { name: "产品中心", url: "/product-list", hasBreadcrumbUrl: true },
           { name: "产品详情", hasBreadcrumbUrl: false },
         ],
-        isAuthenticated: req.session.isLogin,
       });
     })
     .catch((err) => console.log(err));
@@ -107,7 +103,7 @@ exports.postCreateOrder = (req, res, next) => {
 
       const order = new Order({
         user: {
-          name: req.user.name,
+          email: req.user.email,
           userId: req.user._id,
         },
         products,
@@ -136,7 +132,6 @@ exports.getCheckout = (req, res, next) => {
         { name: "首页", url: "/", hasBreadcrumbUrl: true },
         { name: "订单管理", hasBreadcrumbUrl: false },
       ],
-      isAuthenticated: req.session.isLogin,
     });
   });
 };

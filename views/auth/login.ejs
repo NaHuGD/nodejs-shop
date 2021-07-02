@@ -1,17 +1,20 @@
 <%- include('../includes/header.ejs')%>
 
 <form class="login-form" action="/login" method="post">
+  <%- include('../includes/errorMsg.ejs')%>
+
   <div class="form-group">
     <label for="email">會員email </label>
-    <input type="text" class="form-control" />
+    <input type="text" class="form-control" name="email" />
     <small id="titleHelp" class="form-text text-muted">请输入會員email</small>
   </div>
 
   <div class="form-group">
-    <label for="email">會員密碼 </label>
-    <input type="text" class="form-control" />
-    <small id="titleHelp" class="form-text text-muted">请输入會員密碼</small>
+    <label for="password">會員密碼 </label>
+    <input type="text" class="form-control" name="password" />
+    <small id="password" class="form-text text-muted">请输入會員密碼</small>
   </div>
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
   <button type="submit" class="btn btn-primary">登入</button>
 </form>
 <%- include('../includes/footer.ejs')%>

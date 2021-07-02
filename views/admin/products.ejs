@@ -17,6 +17,7 @@
                     <a href="/admin/edit-product/<%= product._id %>?edit=true" class="btn btn-primary mr-2">修改产品</a>
                     <form action="/admin/delete-product" method="post">
                         <input type="hidden" name="productId" value="<%= product._id %>" />
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                         <button type="submit" class="btn btn-danger">删除产品</button>
                     </form>
                 </div>

@@ -11,6 +11,10 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 // mongoDb位置
 const MONGODB_URI = "mongodb://localhost/nodejs-shop";
+// 引入csrf
+const csrf = require("csurf");
+// 引入表單驗證
+const flash = require("express-flash-messages");
 
 const app = express();
 // nongodb session實例化
@@ -22,8 +26,13 @@ const store = new MongoDBStore({
   collection: "sessions",
 });
 
+const csrfProtection = csrf();
+
 app.set("view engine", "ejs");
 app.set("views", "views");
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
 
 // 設置session
 app.use(
@@ -42,8 +51,9 @@ app.use(
   })
 );
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(csrfProtection);
+app.use(flash());
+
 
 app.use((req, res, next) => {
   if (!req.session.user) return next();
@@ -55,6 +65,13 @@ app.use((req, res, next) => {
     .catch((err) => console.log(err));
 });
 
+// 設置csrf, isLogin中間件
+app.use((req, res, next) => {
+ res.locals.isAuthenticated = req.session.isLogin;
+ res.locals.csrfToken = req.csrfToken();
+ next();
+})
+
 app.use(authRoutes);
 app.use(shopRoutes);
 app.use("/admin", adminRoutes);
@@ -64,19 +81,6 @@ app.use(errorController.get404);
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true })
   .then((result) => {
-    User.findOne().then((user) => {
-      if (!user) {
-        const user = new User({
-          name: "Vane",
-          email: "chinavane_2008@163.com",
-          cart: {
-            items: [],
-          },
-        });
-        user.save();
-      }
-    });
-
     app.listen(3000, () => {
       console.log("App listening on port 3000!");
     });
