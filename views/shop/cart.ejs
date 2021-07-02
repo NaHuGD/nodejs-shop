@@ -17,6 +17,7 @@
 
             <form action="/cart-delete-product" method="post">
                 <input type="hidden" name="productId" value="<%= item.productId._id %>" />
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                 <button type="submit" class="btn btn-danger">删除产品</button>
             </form>
 
@@ -26,6 +27,7 @@
 
     <center>
         <form action="/create-order" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
             <button type="submit" class="btn btn-primary">生成订单</button>
         </form>
     </center>

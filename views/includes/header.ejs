@@ -51,9 +51,11 @@
 
                 <% if(!isAuthenticated) { %>
                     <a href="/login" class="btn btn-outline-success">登入</a>
+                    <a href="/registered" class="btn btn-outline-primary ml-2">註冊</a>
                 <% } else { %>
                     <form action="/logout" method="post">
-                        <button class="btn btn-outline-danger ml-2">登出</button>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                        <button class="btn btn-outline-danger">登出</button>
                     </form>
                 <% } %>
             </div>

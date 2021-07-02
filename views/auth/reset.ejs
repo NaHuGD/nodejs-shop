@@ -1,0 +1,16 @@
+<%- include('../includes/header.ejs')%>
+
+  <form class="login-form" action="/reset" method="post">
+    <%- include('../includes/errorMessage.ejs')%>
+
+      <div class="form-group">
+        <label for="email">會員email </label>
+        <input type="text" class="form-control" name="email" />
+        <small id="titleHelp" class="form-text text-muted">请输入會員email</small>
+      </div>
+
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+      <button type="submit" class="btn btn-warning">重設密碼</button>
+  </form>
+
+  <%- include('../includes/footer.ejs')%>

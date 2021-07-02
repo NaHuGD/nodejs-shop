@@ -1,68 +1,74 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-	name: { type: String, required: true },
-	email: { type: String, required: true },
-	cart: {
-		items: [
-			{
-				productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-				quantity: { type: Number, required: true },
-			},
-		],
-	},
+  email: { type: String, required: true },
+  password: { type: String, required: true },
+  resetToken: String,
+  resetTokenExpiration: Number,
+  cart: {
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        quantity: { type: Number, required: true },
+      },
+    ],
+  },
 });
 
 userSchema.methods.addToCart = function (product) {
-	// 需要找到购物车项目中当前产品的下标位置
-	const cartProductIndex = this.cart.items.findIndex((item) => {
-		return item.productId.toString() === product._id.toString();
-	});
+  // 需要找到购物车项目中当前产品的下标位置
+  const cartProductIndex = this.cart.items.findIndex((item) => {
+    return item.productId.toString() === product._id.toString();
+  });
 
-	// 设置初始的产品购买数量
-	let newQuantity = 1;
-	// 将原来的购物车清单进行重新的赋值操作
-	const updatedCartItems = [...this.cart.items];
+  // 设置初始的产品购买数量
+  let newQuantity = 1;
+  // 将原来的购物车清单进行重新的赋值操作
+  const updatedCartItems = [...this.cart.items];
 
-	// 如果购买的商品并没有存在于原来的购物车清单当中
-	if (cartProductIndex === -1) {
-		// 添加新的产品，并且productId，购买数量则为默认
-		updatedCartItems.push({
-			productId: product._id,
-			quantity: newQuantity,
-		});
-	} else {
-		// 已经加入过购物车，需要将原来下标的产品购买数量+1
-		newQuantity = this.cart.items[cartProductIndex].quantity + 1;
-		updatedCartItems[cartProductIndex].quantity = newQuantity;
-	}
+  // 如果购买的商品并没有存在于原来的购物车清单当中
+  if (cartProductIndex === -1) {
+    // 添加新的产品，并且productId，购买数量则为默认
+    updatedCartItems.push({
+      productId: product._id,
+      quantity: newQuantity,
+    });
+  } else {
+    // 已经加入过购物车，需要将原来下标的产品购买数量+1
+    newQuantity = this.cart.items[cartProductIndex].quantity + 1;
+    updatedCartItems[cartProductIndex].quantity = newQuantity;
+  }
 
-	// 设置购物车购买的产品列表清单项
-	const updatedCart = {
-		items: updatedCartItems,
-	};
+  // 设置购物车购买的产品列表清单项
+  const updatedCart = {
+    items: updatedCartItems,
+  };
 
-	this.cart = updatedCart;
+  this.cart = updatedCart;
 
-	return this.save();
+  return this.save();
 };
 
 userSchema.methods.deleteProductFromCart = function (productId) {
-	const updatedCartItems = this.cart.items.filter((item) => {
-		return item.productId.toString() !== productId.toString();
-	});
+  const updatedCartItems = this.cart.items.filter((item) => {
+    return item.productId.toString() !== productId.toString();
+  });
 
-	this.cart.items = updatedCartItems;
+  this.cart.items = updatedCartItems;
 
-	return this.save();
+  return this.save();
 };
 
 userSchema.methods.clearCart = function () {
-	this.cart = { items: [] };
-	return this.save();
+  this.cart = { items: [] };
+  return this.save();
 };
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model("User", userSchema);
 
 // const mongodb = require('mongodb');
 // const ObjectID = mongodb.ObjectID;

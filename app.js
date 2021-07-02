@@ -11,6 +11,10 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongodb-session")(session);
 // mongoDb位置
 const MONGODB_URI = "mongodb://localhost/nodejs-shop";
+// 引入csrf
+const csrf = require("csurf");
+// 引入表單驗證
+const flash = require("express-flash-messages");
 
 const app = express();
 // nongodb session實例化
@@ -22,8 +26,13 @@ const store = new MongoDBStore({
   collection: "sessions",
 });
 
+const csrfProtection = csrf();
+
 app.set("view engine", "ejs");
 app.set("views", "views");
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(path.join(__dirname, "public")));
 
 // 設置session
 app.use(
@@ -42,17 +51,33 @@ app.use(
   })
 );
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, "public")));
+app.use(csrfProtection);
+app.use(flash());
 
 app.use((req, res, next) => {
   if (!req.session.user) return next();
-  User.findOne()
+  User.findById(req.session.user._id)
     .then((user) => {
+      if (!user) {
+        // 找不到用戶時，清除session資料
+        return req.session.destroy((err) => {
+          return res.status(404).send("找不到指定用戶");
+        });
+      }
+
       req.user = user;
       next();
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      next(new Error("找不到指定用戶出錯", err));
+    });
+});
+
+// 設置csrf, isLogin中間件
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLogin;
+  res.locals.csrfToken = req.csrfToken();
+  next();
 });
 
 app.use(authRoutes);
@@ -62,23 +87,10 @@ app.use("/admin", adminRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(MONGODB_URI, { useNewUrlParser: true })
+  .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
-    User.findOne().then((user) => {
-      if (!user) {
-        const user = new User({
-          name: "Vane",
-          email: "chinavane_2008@163.com",
-          cart: {
-            items: [],
-          },
-        });
-        user.save();
-      }
-    });
-
     app.listen(3000, () => {
       console.log("App listening on port 3000!");
     });
   })
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("mongoose連結異常", err));

@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const User = require("../models/user");
+const { validationResult } = require("express-validator");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -10,7 +11,10 @@ exports.getAddProduct = (req, res, next) => {
       { name: "添加产品", hasBreadcrumbUrl: false },
     ],
     editing: false,
-    isAuthenticated: req.session.isLogin,
+    hashError: false,
+    errorMessage: null,
+    product: { title: "", imageUrl: "", price: "", description: "" },
+    validationErrors: [],
   });
 };
 
@@ -36,8 +40,10 @@ exports.getEditProduct = (req, res, next) => {
         { name: "修改产品", hasBreadcrumbUrl: false },
       ],
       editing: editMode,
+      errorMessage: null,
+      hashError: false,
+      validationErrors: [],
       product,
-      isAuthenticated: req.session.isLogin,
     });
   });
 };
@@ -49,13 +55,31 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const userId = req.user;
 
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render("admin/edit-product", {
+      docTitle: "添加产品",
+      activeProductManage: true,
+      breadcrumb: [
+        { name: "首页", url: "/", hasBreadcrumbUrl: true },
+        { name: "添加产品", hasBreadcrumbUrl: false },
+      ],
+      editing: false,
+      hashError: true,
+      errorMessage: errors.array()[0].msg,
+      product: { title, imageUrl, price, description },
+      validationErrors: errors.array(),
+    });
+  }
+
   const product = new Product({ title, imageUrl, price, description, userId });
   product
     .save()
     .then((result) => {
       res.redirect("/admin/products");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => console.log("product-err,product-err", err));
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -65,7 +89,32 @@ exports.postEditProduct = (req, res, next) => {
   const description = req.body.description;
   const price = req.body.price;
 
+  const errors = validationResult(req);
+  console.log(errors.isEmpty());
+
+  if (!errors.isEmpty()) {
+    console.log("qweqweqweq", errors.array());
+    return res.status(422).render("admin/edit-product", {
+      docTitle: "修改产品",
+      activeProductManage: true,
+      breadcrumb: [
+        { name: "首页", url: "/", hasBreadcrumbUrl: true },
+        { name: "修改产品", hasBreadcrumbUrl: false },
+      ],
+      editing: true,
+      hashError: true,
+      errorMessage: errors.array()[0].msg,
+      product: { title, imageUrl, price, description, _id: productId },
+      validationErrors: errors.array(),
+    });
+  }
+
   Product.findById(productId).then((product) => {
+    console.log("product", product);
+    // 判斷是否為正確帳號
+    if (req.user._id.toString() !== product.userId.toString()) {
+      return res.redirect("/");
+    }
     product.title = title;
     product.price = price;
     product.description = description;
@@ -75,14 +124,14 @@ exports.postEditProduct = (req, res, next) => {
       .then((result) => {
         res.redirect("/admin/products");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.log("判斷帳號err", err));
   });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-
-  Product.findByIdAndDelete(productId)
+  // 產品及用戶ID都匹配才能刪除
+  Product.deleteOne({ _id: productId, userId: req.user._id })
     .then((result) => {
       res.redirect("/admin/products");
     })
@@ -90,7 +139,7 @@ exports.postDeleteProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  Product.find({ userId: req.user._id })
     // .select('title price -_id')
     // .populate('userId', 'name -_id')
     .then((products) => {
@@ -102,7 +151,6 @@ exports.getProducts = (req, res, next) => {
           { name: "首页", url: "/", hasBreadcrumbUrl: true },
           { name: "产品管理", hasBreadcrumbUrl: false },
         ],
-        isAuthenticated: req.session.isLogin,
       });
     });
 };
