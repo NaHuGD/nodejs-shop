@@ -64,6 +64,10 @@ exports.postEditProduct = (req, res, next) => {
   const price = req.body.price;
 
   Product.findById(productId).then((product) => {
+    // 判斷是否為正確帳號
+    if (req.user._id.toString() !== product.userId.toString()) {
+      return res.redirect("/");
+    }
     product.title = title;
     product.price = price;
     product.description = description;
@@ -79,8 +83,8 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-
-  Product.findByIdAndDelete(productId)
+  // 產品及用戶ID都匹配才能刪除
+  Product.deleteOne({ _id: productId, userId: req.user._id })
     .then((result) => {
       res.redirect("/admin/products");
     })
@@ -88,7 +92,7 @@ exports.postDeleteProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  Product.find({ userId: req.user._id })
     // .select('title price -_id')
     // .populate('userId', 'name -_id')
     .then((products) => {

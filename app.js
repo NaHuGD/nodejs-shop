@@ -54,10 +54,9 @@ app.use(
 app.use(csrfProtection);
 app.use(flash());
 
-
 app.use((req, res, next) => {
   if (!req.session.user) return next();
-  User.findOne()
+  User.findById(req.session.user._id)
     .then((user) => {
       req.user = user;
       next();
@@ -67,10 +66,10 @@ app.use((req, res, next) => {
 
 // 設置csrf, isLogin中間件
 app.use((req, res, next) => {
- res.locals.isAuthenticated = req.session.isLogin;
- res.locals.csrfToken = req.csrfToken();
- next();
-})
+  res.locals.isAuthenticated = req.session.isLogin;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 
 app.use(authRoutes);
 app.use(shopRoutes);
@@ -79,10 +78,10 @@ app.use("/admin", adminRoutes);
 app.use(errorController.get404);
 
 mongoose
-  .connect(MONGODB_URI, { useNewUrlParser: true })
+  .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
     app.listen(3000, () => {
       console.log("App listening on port 3000!");
     });
   })
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("mongoose連結異常", err));

@@ -25,8 +25,8 @@
         <small id="descriptionHelp" class="form-text text-muted">请输入产品介绍</small>
     </div>
 
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
     <% if(editing){ %>
-        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
         <input type="hidden" name="productId" id="productId" value="<%= product._id %>" />
         <%}%>
     <button type="submit" class="btn btn-primary">
