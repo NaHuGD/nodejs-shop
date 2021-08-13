@@ -1,41 +1,58 @@
 <%- include('../includes/header.ejs')%>
 
-<form class="product-form" action="/admin/<% if(editing){ %>edit-product<% } else {%>add-product<% } %>" method="post">
-    <div class="form-group">
-        <label for="title">产品标题</label>
-        <input type="text" class="form-control" id="title" name="title" aria-describedby="titleHelp" value="<% if(editing){%><%= product.title %><%}%>">
-        <small id="titleHelp" class="form-text text-muted">请输入标题内容</small>
-    </div>
+    <form class="product-form" action="/admin/<% if(editing){ %>edit-product<% } else {%>add-product<% } %>"
+        method="post" novalidate>
 
-    <div class="form-group">
-        <label for="imageUrl">产品图片</label>
-        <input type="text" class="form-control" id="imageUrl" name="imageUrl" aria-describedby="imageUrlHelp" value="<% if(editing){%><%= product.imageUrl %><%}%>">
-        <small id="imageUrlHelp" class="form-text text-muted">请输入产品图片地址</small>
-    </div>
+        <%- include('../includes/errorMessage.ejs')%>
 
-    <div class="form-group">
-        <label for="price">产品价格</label>
-        <input type="number" class="form-control" id="price" name="price" aria-describedby="priceHelp" value="<% if(editing){%><%= product.price %><%}%>">
-        <small id="priceHelp" class="form-text text-muted">请输入产品价格</small>
-    </div>
+            <div class="form-group">
+                <label for="title">产品标题</label>
+                <input type="text"
+                    class="form-control <%= validationErrors.find(e=>e.param === 'title') ? 'is-invalid' : ''%>"
+                    id="title" name="title" aria-describedby="titleHelp"
+                    value="<% if(editing || hashError){%><%= product.title %><%}%>">
+                <small id="titleHelp" class="form-text text-muted">请输入标题内容</small>
+            </div>
 
-    <div class="form-group">
-        <label for="description">产品介绍</label>
-        <textarea class="form-control" id="description" name="description" rows="4"><% if(editing){%><%= product.description %><%}%></textarea>
-        <small id="descriptionHelp" class="form-text text-muted">请输入产品介绍</small>
-    </div>
+            <div class="form-group">
+                <label for="imageUrl">产品图片</label>
+                <input type="text"
+                    class="form-control <%= validationErrors.find(e=>e.param === 'imageUrl') ? 'is-invalid' : ''%>"
+                    id="imageUrl" name="imageUrl" aria-describedby="imageUrlHelp"
+                    value="<% if(editing || hashError){%><%= product.imageUrl %><%}%>">
+                <small id="imageUrlHelp" class="form-text text-muted">请输入产品图片地址</small>
+            </div>
 
-    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-    <% if(editing){ %>
-        <input type="hidden" name="productId" id="productId" value="<%= product._id %>" />
-        <%}%>
-    <button type="submit" class="btn btn-primary">
-        <% if(editing){%>
-        修改产品
-        <%  }else{%>
-        添加产品
-        <%  } %>
+            <div class="form-group">
+                <label for="price">产品价格</label>
+                <input type="number"
+                    class="form-control <%= validationErrors.find(e=>e.param === 'price') ? 'is-invalid' : ''%>"
+                    id="price" name="price" aria-describedby="priceHelp"
+                    value="<% if(editing || hashError){%><%= product.price %><%}%>">
+                <small id="priceHelp" class="form-text text-muted">请输入产品价格</small>
+            </div>
 
-        </button>
-</form>
-<%- include('../includes/footer.ejs')%>
+            <div class="form-group">
+                <label for="description">产品介绍</label>
+                <textarea
+                    class="form-control <%= validationErrors.find(e=>e.param === 'description') ? 'is-invalid' : ''%>"
+                    id="description" name="description"
+                    rows="4"><% if(editing || hashError){%><%= product.description %><%}%></textarea>
+                <small id="descriptionHelp" class="form-text text-muted">请输入产品介绍</small>
+            </div>
+
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+            <% if(editing){ %>
+                <input type="hidden" name="productId" id="productId" value="<%= product._id %>" />
+                <%}%>
+                    <button type="submit" class="btn btn-primary">
+                        <% if(editing){%>
+                            修改产品
+                            <% }else{%>
+                                添加产品
+                                <% } %>
+
+                    </button>
+    </form>
+
+    <%- include('../includes/footer.ejs')%>

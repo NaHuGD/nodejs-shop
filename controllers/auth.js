@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const { validationResult } = require("express-validator");
 
 // node提規模快 => 隨機生成加密數
 const crypto = require("crypto");
@@ -24,7 +25,9 @@ exports.getLogin = (req, res, next) => {
       { name: "首页", url: "/", hasBreadcrumbUrl: true },
       { name: "會員登入", hasBreadcrumbUrl: false },
     ],
-    errorMsg: req.flash("error"),
+    errorMessage: req.flash("error"),
+    oldInput: { email: "", password: "" },
+    validationErrors: [],
   });
 };
 
@@ -32,12 +35,36 @@ exports.postLogin = (req, res, next) => {
   // 取得資料後判斷登入
   const email = req.body.email;
   const password = req.body.password;
+
+  const errors = validationResult(req);
+  console.log(errors.array());
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render("auth/login", {
+      docTitle: "會員登入",
+      breadcrumb: [
+        { name: "首页", url: "/", hasBreadcrumbUrl: true },
+        { name: "會員登入", hasBreadcrumbUrl: false },
+      ],
+      errorMessage: errors.array()[0].msg,
+      oldInput: { email, password },
+      validationErrors: errors.array(),
+    });
+  }
   // 查詢User資料庫，是否匹配email
   User.findOne({ email }).then((user) => {
     if (!user) {
-      req.flash("error", "沒有該用戶資料");
       // 資料庫沒有該用戶
-      return res.redirect("/login");
+      return res.status(422).render("auth/login", {
+        docTitle: "會員登入",
+        breadcrumb: [
+          { name: "首页", url: "/", hasBreadcrumbUrl: true },
+          { name: "會員登入", hasBreadcrumbUrl: false },
+        ],
+        errorMessage: "沒有該用戶資料",
+        oldInput: { email, password },
+        validationErrors: [],
+      });
     }
     // bcrypt比對操作 => 查詢是否匹配
     bcrypt
@@ -55,9 +82,16 @@ exports.postLogin = (req, res, next) => {
           });
         }
 
-        req.flash("error", "密碼錯誤");
-        // 資料不匹配時
-        res.redirect("/login");
+        return res.status(422).render("auth/login", {
+          docTitle: "會員登入",
+          breadcrumb: [
+            { name: "首页", url: "/", hasBreadcrumbUrl: true },
+            { name: "會員登入", hasBreadcrumbUrl: false },
+          ],
+          errorMessage: "密碼錯誤",
+          oldInput: { email, password },
+          validationErrors: [],
+        });
       })
       .catch((err) => console.log("登入異常", err));
   });
@@ -79,7 +113,9 @@ exports.getRegistered = (req, res, next) => {
       { name: "首页", url: "/", hasBreadcrumbUrl: true },
       { name: "會員註冊", hasBreadcrumbUrl: false },
     ],
-    errorMsg: req.flash("error"),
+    errorMessage: req.flash("error"),
+    oldInput: { email: "", password: "", confirmPassword: "" },
+    validationErrors: [],
   });
 };
 
@@ -87,44 +123,47 @@ exports.postRegistered = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
-  // 查詢是否註冊
-  User.findOne({ email })
-    .then((userDoc) => {
-      if (userDoc) {
-        req.flash("error", "該用戶已經註冊");
-        return res.redirect("/registered");
-      }
+  const errors = validationResult(req);
 
-      if (password !== confirmPassword) {
-        console.log(password, confirmPassword);
-        req.flash("error", "確認密碼不一致");
-        return res.redirect("/registered");
-      }
-      return bcrypt.hash(password, 12).then((hashPassword) => {
-        const user = new User({
-          email,
-          // 帶入加密密碼
-          password: hashPassword,
-          cart: {
-            items: [],
-          },
-        });
+  if (!errors.isEmpty()) {
+    // 錯誤時渲染頁面
+    console.log(errors.array());
 
-        return user.save().then(() => {
-          // 導頁後進行發送，避免過程過於龐大
-          res.redirect("/login");
-          transporter.sendMail({
-            from: "qwe2795qwe@163.com",
-            to: email,
-            subject: "註冊成功",
-            html: "<b>歡迎新用戶註冊</b>",
-          });
-        });
-      });
-    })
-    .catch((err) => {
-      console.log("post註冊錯誤", err);
+    return res.status(422).render("auth/registered", {
+      docTitle: "會員註冊",
+      breadcrumb: [
+        { name: "首页", url: "/", hasBreadcrumbUrl: true },
+        { name: "會員註冊", hasBreadcrumbUrl: false },
+      ],
+      errorMessage: errors.array()[0].msg,
+      oldInput: { email, password, confirmPassword },
+      validationErrors: errors.array(),
     });
+  }
+
+  // 查詢是否註冊
+
+  bcrypt.hash(password, 12).then((hashPassword) => {
+    const user = new User({
+      email,
+      // 帶入加密密碼
+      password: hashPassword,
+      cart: {
+        items: [],
+      },
+    });
+
+    return user.save().then(() => {
+      // 導頁後進行發送，避免過程過於龐大
+      res.redirect("/login");
+      transporter.sendMail({
+        from: "qwe2795qwe@163.com",
+        to: email,
+        subject: "註冊成功",
+        html: "<b>歡迎新用戶註冊</b>",
+      });
+    });
+  });
 };
 
 exports.getReset = (req, res, next) => {
@@ -134,7 +173,7 @@ exports.getReset = (req, res, next) => {
       { name: "首页", url: "/", hasBreadcrumbUrl: true },
       { name: "重設密碼", hasBreadcrumbUrl: false },
     ],
-    errorMsg: req.flash("error"),
+    errorMessage: req.flash("error"),
   });
 };
 
@@ -193,7 +232,7 @@ exports.getNewPassword = (req, res, next) => {
       ],
       userId: user._id.toString(),
       passwordToken: token,
-      errorMsg: req.flash("error"),
+      errorMessage: req.flash("error"),
     });
   });
 };
