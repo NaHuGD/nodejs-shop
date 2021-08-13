@@ -1,9 +1,0 @@
-<% var msg = getMessages() %>
-
-<% if (msg.error) { %>
-  <div class="alert alert-danger" role="alert">
-    <% msg.error.forEach(msg => { %>
-      <div><%= msg %></div>
-    <% })%>
-  </div>
-<% } %>
