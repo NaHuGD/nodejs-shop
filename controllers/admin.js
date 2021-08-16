@@ -80,7 +80,7 @@ exports.postAddProduct = (req, res, next) => {
     price,
     description,
     userId,
-    _id: new mongoose.Types.ObjectId("611632b279c91732f9b8894c"),
+    // _id: new mongoose.Types.ObjectId("611632b279c91732f9b8894c"),
   });
   product
     .save()

@@ -54,6 +54,13 @@ app.use(
 app.use(csrfProtection);
 app.use(flash());
 
+// 設置csrf, isLogin中間件
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.session.isLogin;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
 app.use((req, res, next) => {
   if (!req.session.user) return next();
   User.findById(req.session.user._id)
@@ -71,13 +78,6 @@ app.use((req, res, next) => {
     .catch((err) => {
       next(new Error("找不到指定用戶出錯", err));
     });
-});
-
-// 設置csrf, isLogin中間件
-app.use((req, res, next) => {
-  res.locals.isAuthenticated = req.session.isLogin;
-  res.locals.csrfToken = req.csrfToken();
-  next();
 });
 
 app.use(authRoutes);
