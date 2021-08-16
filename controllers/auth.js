@@ -93,11 +93,7 @@ exports.postLogin = (req, res, next) => {
           validationErrors: [],
         });
       })
-      .catch((err) => {
-        const error = new Error(`登入異常err:${err}`);
-        error.httpStatuCode = 500;
-        return next(error);
-      });
+      .catch((err) => console.log("登入異常", err));
   });
 };
 
@@ -157,23 +153,16 @@ exports.postRegistered = (req, res, next) => {
       },
     });
 
-    return user
-      .save()
-      .then(() => {
-        // 導頁後進行發送，避免過程過於龐大
-        res.redirect("/login");
-        transporter.sendMail({
-          from: "qwe2795qwe@163.com",
-          to: email,
-          subject: "註冊成功",
-          html: "<b>歡迎新用戶註冊</b>",
-        });
-      })
-      .catch((err) => {
-        const error = new Error(`註冊信箱err: ${err}`);
-        error.httpStatuCode = 500;
-        return next(error);
+    return user.save().then(() => {
+      // 導頁後進行發送，避免過程過於龐大
+      res.redirect("/login");
+      transporter.sendMail({
+        from: "qwe2795qwe@163.com",
+        to: email,
+        subject: "註冊成功",
+        html: "<b>歡迎新用戶註冊</b>",
       });
+    });
   });
 };
 
@@ -208,25 +197,18 @@ exports.postReset = (req, res, next) => {
       user.resetTokenExpiration = Date.now() * 1000 * 60 * 60;
       console.log(user.resetTokenExpiration);
       // user.resetTokenExpiration = 100;
-      return user
-        .save()
-        .then(() => {
-          res.redirect("/");
-          transporter.sendMail({
-            from: "qwe2795qwe@163.com",
-            to: email,
-            subject: "重設密碼",
-            html: `
+      return user.save().then(() => {
+        res.redirect("/");
+        transporter.sendMail({
+          from: "qwe2795qwe@163.com",
+          to: email,
+          subject: "重設密碼",
+          html: `
             已請求密碼重置，請點擊以下地址
             <a href="http://localhost:3000/reset/${token}">重置連結</a>
           `,
-          });
-        })
-        .catch((err) => {
-          const error = new Error(`重設密碼err: ${err}`);
-          error.httpStatuCode = 500;
-          return next(error);
         });
+      });
     });
   });
 };
@@ -237,28 +219,22 @@ exports.getNewPassword = (req, res, next) => {
   User.findOne({
     resetToken: token,
     resetTokenExpiration: { $gt: Date.now() },
-  })
-    .then((user) => {
-      if (!user) {
-        // 沒有匹配用戶時=>token過期...
-        res.redirect("/login");
-      }
-      res.render("auth/new-password", {
-        docTitle: "重設新密碼",
-        breadcrumb: [
-          { name: "首页", url: "/", hasBreadcrumbUrl: true },
-          { name: "重設新密碼", hasBreadcrumbUrl: false },
-        ],
-        userId: user._id.toString(),
-        passwordToken: token,
-        errorMessage: req.flash("error"),
-      });
-    })
-    .catch((err) => {
-      const error = new Error(`取得新密碼err: ${err}`);
-      error.httpStatuCode = 500;
-      return next(error);
+  }).then((user) => {
+    if (!user) {
+      // 沒有匹配用戶時=>token過期...
+      res.redirect("/login");
+    }
+    res.render("auth/new-password", {
+      docTitle: "重設新密碼",
+      breadcrumb: [
+        { name: "首页", url: "/", hasBreadcrumbUrl: true },
+        { name: "重設新密碼", hasBreadcrumbUrl: false },
+      ],
+      userId: user._id.toString(),
+      passwordToken: token,
+      errorMessage: req.flash("error"),
     });
+  });
 };
 
 exports.postNewPassword = (req, res, next) => {
@@ -288,14 +264,7 @@ exports.postNewPassword = (req, res, next) => {
           res.redirect("/login");
         })
         .catch((err) => {
-          const error = new Error(`修改密碼err: ${err}`);
-          error.httpStatuCode = 500;
-          return next(error);
+          console.log("修改密碼err", err);
         });
-    })
-    .catch((err) => {
-      const error = new Error(`重設密碼err: ${err}`);
-      error.httpStatuCode = 500;
-      return next(error);
     });
 };
