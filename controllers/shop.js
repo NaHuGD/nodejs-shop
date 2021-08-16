@@ -2,17 +2,23 @@ const Product = require("../models/product");
 const Order = require("../models/order");
 
 exports.getProducts = (req, res, next) => {
-  Product.find().then((products) => {
-    res.render("shop/product-list", {
-      prods: products,
-      docTitle: "产品中心",
-      activeProductList: true,
-      breadcrumb: [
-        { name: "首页", url: "/", hasBreadcrumbUrl: true },
-        { name: "产品中心", hasBreadcrumbUrl: false },
-      ],
+  Product.find()
+    .then((products) => {
+      res.render("shop/product-list", {
+        prods: products,
+        docTitle: "产品中心",
+        activeProductList: true,
+        breadcrumb: [
+          { name: "首页", url: "/", hasBreadcrumbUrl: true },
+          { name: "产品中心", hasBreadcrumbUrl: false },
+        ],
+      });
+    })
+    .catch((err) => {
+      const error = new Error(`取得商品頁err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
     });
-  });
 };
 
 exports.getIndex = (req, res, next) => {
@@ -28,7 +34,11 @@ exports.getIndex = (req, res, next) => {
         ],
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(`取得商品詳情err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.getCart = (req, res, next) => {
@@ -46,6 +56,11 @@ exports.getCart = (req, res, next) => {
         ],
         cartProducts: products,
       });
+    })
+    .catch((err) => {
+      const error = new Error(`取得購物車err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
     });
 };
 
@@ -59,7 +74,11 @@ exports.postAddToCart = (req, res, next) => {
     .then((result) => {
       res.redirect("/cart");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(`新增購物車err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.postCartDeleteProduct = (req, res, next) => {
@@ -70,7 +89,11 @@ exports.postCartDeleteProduct = (req, res, next) => {
     .then((result) => {
       res.redirect("/cart");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(`刪除購物車err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.getProductDetail = (req, res, next) => {
@@ -89,7 +112,11 @@ exports.getProductDetail = (req, res, next) => {
         ],
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(`獲取產品詳情err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.postCreateOrder = (req, res, next) => {
@@ -118,20 +145,28 @@ exports.postCreateOrder = (req, res, next) => {
       res.redirect("/checkout");
     })
     .catch((err) => {
-      console.log(err);
+      const error = new Error(`訂單管理err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
     });
 };
 
 exports.getCheckout = (req, res, next) => {
-  Order.find({ "user.userId": req.user._id }).then((orders) => {
-    res.render("shop/checkout", {
-      docTitle: "订单管理",
-      activeCheckout: true,
-      orders,
-      breadcrumb: [
-        { name: "首页", url: "/", hasBreadcrumbUrl: true },
-        { name: "订单管理", hasBreadcrumbUrl: false },
-      ],
+  Order.find({ "user.userId": req.user._id })
+    .then((orders) => {
+      res.render("shop/checkout", {
+        docTitle: "订单管理",
+        activeCheckout: true,
+        orders,
+        breadcrumb: [
+          { name: "首页", url: "/", hasBreadcrumbUrl: true },
+          { name: "订单管理", hasBreadcrumbUrl: false },
+        ],
+      });
+    })
+    .catch((err) => {
+      const error = new Error(`獲取訂單管理err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
     });
-  });
 };

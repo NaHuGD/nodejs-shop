@@ -84,7 +84,16 @@ app.use(authRoutes);
 app.use(shopRoutes);
 app.use("/admin", adminRoutes);
 
+// 錯誤頁面設置
+app.use("/500", errorController.get500);
 app.use(errorController.get404);
+
+app.use((error, req, res, next) => {
+  res.status(500).render("500", {
+    docTitle: "DB資料庫異常",
+    errorMessage: error,
+  });
+});
 
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })

@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
+const mongoose = require("mongoose");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -73,13 +74,24 @@ exports.postAddProduct = (req, res, next) => {
     });
   }
 
-  const product = new Product({ title, imageUrl, price, description, userId });
+  const product = new Product({
+    title,
+    imageUrl,
+    price,
+    description,
+    userId,
+    _id: new mongoose.Types.ObjectId("611632b279c91732f9b8894c"),
+  });
   product
     .save()
     .then((result) => {
       res.redirect("/admin/products");
     })
-    .catch((err) => console.log("product-err,product-err", err));
+    .catch((err) => {
+      const error = new Error(`新增商品err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.postEditProduct = (req, res, next) => {
@@ -109,23 +121,33 @@ exports.postEditProduct = (req, res, next) => {
     });
   }
 
-  Product.findById(productId).then((product) => {
-    console.log("product", product);
-    // 判斷是否為正確帳號
-    if (req.user._id.toString() !== product.userId.toString()) {
-      return res.redirect("/");
-    }
-    product.title = title;
-    product.price = price;
-    product.description = description;
-    product.imageUrl = imageUrl;
-    product
-      .save()
-      .then((result) => {
-        res.redirect("/admin/products");
-      })
-      .catch((err) => console.log("判斷帳號err", err));
-  });
+  Product.findById(productId)
+    .then((product) => {
+      console.log("product", product);
+      // 判斷是否為正確帳號
+      if (req.user._id.toString() !== product.userId.toString()) {
+        return res.redirect("/");
+      }
+      product.title = title;
+      product.price = price;
+      product.description = description;
+      product.imageUrl = imageUrl;
+      product
+        .save()
+        .then((result) => {
+          res.redirect("/admin/products");
+        })
+        .catch((err) => {
+          const error = new Error(`判斷帳號err: ${err}`);
+          error.httpStatuCode = 500;
+          return next(error);
+        });
+    })
+    .catch((err) => {
+      const error = new Error(`判斷帳號err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.postDeleteProduct = (req, res, next) => {
@@ -135,7 +157,11 @@ exports.postDeleteProduct = (req, res, next) => {
     .then((result) => {
       res.redirect("/admin/products");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      const error = new Error(`刪除商品err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
+    });
 };
 
 exports.getProducts = (req, res, next) => {
@@ -152,5 +178,10 @@ exports.getProducts = (req, res, next) => {
           { name: "产品管理", hasBreadcrumbUrl: false },
         ],
       });
+    })
+    .catch((err) => {
+      const error = new Error(`取得商品err: ${err}`);
+      error.httpStatuCode = 500;
+      return next(error);
     });
 };

@@ -1,0 +1,17 @@
+<%- include('includes/header.ejs')%>
+
+    <% var errorMessage %>
+        <div class="jumbotron">
+            <h1 class="display-4">程序出錯</h1>
+            <p class="lead">
+                <% if(errorMessage) { %>
+                    <%= errorMessage %>
+                        <% } else { %>
+                            很抱歉，服務器異常請稍後再試！
+                            <% } %>
+            </p>
+            <hr class="my-4">
+            <p>请点击按钮返回首页</p>
+            <a class="btn btn-primary btn-lg" href="/" role="button">返回首页</a>
+        </div>
+        <%- include('includes/footer.ejs')%>
