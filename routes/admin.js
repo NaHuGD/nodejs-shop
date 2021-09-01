@@ -10,7 +10,7 @@ const productValidator = [
     .isLength({ min: 3 })
     .trim()
     .withMessage("產品標題不符合規格"),
-  body("imageUrl").isURL().withMessage("請輸入有效圖片URL"),
+  // body("imageUrl").isURL().withMessage("請輸入有效圖片URL"),
   body("price").isFloat().withMessage("請輸入正確金額"),
   body("description")
     .isLength({ min: 5, max: 50 })

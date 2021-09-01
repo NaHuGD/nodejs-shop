@@ -1,7 +1,7 @@
 const Product = require("../models/product");
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
-const mongoose = require("mongoose");
+const fileHelper = require("../util/fileHelper");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -51,10 +51,31 @@ exports.getEditProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const description = req.body.description;
   const price = req.body.price;
   const userId = req.user;
+
+  console.log(image);
+
+  if (!image) {
+    // 未產生圖片
+    return res.status(422).render("admin/edit-product", {
+      docTitle: "添加产品",
+      activeProductManage: true,
+      breadcrumb: [
+        { name: "首页", url: "/", hasBreadcrumbUrl: true },
+        { name: "添加产品", hasBreadcrumbUrl: false },
+      ],
+      editing: false,
+      hashError: true,
+      errorMessage: "未正確上傳圖片",
+      product: { title, price, description },
+      validationErrors: [],
+    });
+  }
+
+  const imageUrl = image.path;
 
   const errors = validationResult(req);
 
@@ -97,12 +118,11 @@ exports.postAddProduct = (req, res, next) => {
 exports.postEditProduct = (req, res, next) => {
   const productId = req.body.productId;
   const title = req.body.title;
-  const imageUrl = req.body.imageUrl;
+  const image = req.file;
   const description = req.body.description;
   const price = req.body.price;
 
   const errors = validationResult(req);
-  console.log(errors.isEmpty());
 
   if (!errors.isEmpty()) {
     console.log("qweqweqweq", errors.array());
@@ -116,7 +136,7 @@ exports.postEditProduct = (req, res, next) => {
       editing: true,
       hashError: true,
       errorMessage: errors.array()[0].msg,
-      product: { title, imageUrl, price, description, _id: productId },
+      product: { title, price, description, _id: productId },
       validationErrors: errors.array(),
     });
   }
@@ -131,7 +151,12 @@ exports.postEditProduct = (req, res, next) => {
       product.title = title;
       product.price = price;
       product.description = description;
-      product.imageUrl = imageUrl;
+      if (image) {
+        // 圖片重複時刪除
+        fileHelper.deleteFile(product.imageUrl);
+        product.imageUrl = image.path;
+      }
+
       product
         .save()
         .then((result) => {
@@ -152,8 +177,18 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const productId = req.body.productId;
-  // 產品及用戶ID都匹配才能刪除
-  Product.deleteOne({ _id: productId, userId: req.user._id })
+
+  Product.findById(productId)
+    .then((product) => {
+      // 判斷是否有產品 在刪除圖片
+      if (!product) {
+        next(new Error("未找到產品"));
+      }
+
+      fileHelper.deleteFile(product.imageUrl);
+      // 產品及用戶ID都匹配才能刪除
+      return Product.deleteOne({ _id: productId, userId: req.user._id });
+    })
     .then((result) => {
       res.redirect("/admin/products");
     })

@@ -1,7 +1,7 @@
 <%- include('../includes/header.ejs')%>
 
     <form class="product-form" action="/admin/<% if(editing){ %>edit-product<% } else {%>add-product<% } %>"
-        method="post" novalidate>
+        method="post" novalidate enctype="multipart/form-data">
 
         <%- include('../includes/errorMessage.ejs')%>
 
@@ -14,13 +14,20 @@
                 <small id="titleHelp" class="form-text text-muted">请输入标题内容</small>
             </div>
 
-            <div class="form-group">
+            <!-- <div class="form-group">
                 <label for="imageUrl">产品图片</label>
                 <input type="text"
                     class="form-control <%= validationErrors.find(e=>e.param === 'imageUrl') ? 'is-invalid' : ''%>"
                     id="imageUrl" name="imageUrl" aria-describedby="imageUrlHelp"
                     value="<% if(editing || hashError){%><%= product.imageUrl %><%}%>">
                 <small id="imageUrlHelp" class="form-text text-muted">请输入产品图片地址</small>
+            </div> -->
+
+            <div class="form-group">
+                <label for="image">产品图片</label>
+                <input type="file" class="form-control" id="image" name="image" aria-describedby="imageHelp"
+                    value="<% if(editing || hashError){%><%= product.imageUrl %><%}%>">
+                <small id="imageHelp" class="form-text text-muted">请输入产品图片地址</small>
             </div>
 
             <div class="form-group">

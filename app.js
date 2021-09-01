@@ -1,5 +1,5 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+// const bodyParser = require("body-parser");
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
@@ -15,6 +15,7 @@ const MONGODB_URI = "mongodb://localhost/nodejs-shop";
 const csrf = require("csurf");
 // 引入表單驗證
 const flash = require("express-flash-messages");
+const multer = require("multer");
 
 const app = express();
 // nongodb session實例化
@@ -28,11 +29,40 @@ const store = new MongoDBStore({
 
 const csrfProtection = csrf();
 
+const storage = multer.diskStorage({
+  // 存取位置
+  destination: function (req, file, cb) {
+    cb(null, "images");
+  },
+  // 文檔名稱
+  filename: function (req, file, cb) {
+    console.log(file);
+    const prefix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, prefix + "-" + file.originalname);
+  },
+});
+
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-app.use(bodyParser.urlencoded({ extended: false }));
+const fileFilter = (req, file, cb) => {
+  console.log("file", file);
+  // 判斷type
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/jpeg"
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+app.use(express.urlencoded({ extended: false }));
+app.use(multer({ storage, fileFilter }).single("image"));
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // 設置session
 app.use(
