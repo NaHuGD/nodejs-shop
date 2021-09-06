@@ -20,8 +20,6 @@ const productValidator = [
 
 const router = express.Router();
 
-console.log("isAuthisAuthisAuth", isAuth);
-
 router.get("/add-product", isAuth, adminController.getAddProduct);
 
 router.get("/edit-product/:productId", isAuth, adminController.getEditProduct);

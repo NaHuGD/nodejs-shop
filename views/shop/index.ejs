@@ -1,6 +1,7 @@
 <%- include('../includes/header.ejs')%>
 
 <h1>我的产品</h1>
+<% var totalPage, nextPage, prevPage, hasNextPage, hasPrePage, currentPage %>
 <% if(prods.length>0){ %>
 <div class="row">
     <%  for (let product of prods){ %>
@@ -20,6 +21,49 @@
     </div>
     <% } %>
 </div>
+<div class="mt-5"></div>
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+
+        <% if(!hasPrePage) { %>
+            <li class="page-item disabled">
+                <div class="page-link">
+                    <span aria-hidden="true">&laquo;</span>
+                </div>
+            </li>
+        <% } else { %>
+            <li class="page-item">
+                <a class="page-link" href="?page=<%= prevPage %>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        <% } %>
+        <% for (let numPage = 0; numPage < totalPages; numPage++) { %>
+            <% if (currentPage === numPage + 1) { %>
+                <li class="page-item active">
+                    <a class="page-link" href="?page=<%= numPage + 1%>"><%= numPage + 1 %></a>
+                </li>
+            <% } else { %>
+                <li class="page-item">
+                    <a class="page-link" href="?page=<%= numPage + 1%>"><%= numPage + 1 %></a>
+                </li>
+            <% } %>
+        <% } %>
+        <% if(!hasNextPage) { %>
+            <li class="page-item disabled">
+                <div class="page-link">
+                    <span aria-hidden="true">&raquo;</span>
+                </div>
+            </li>
+        <% } else { %>
+            <li class="page-item">
+                <a class="page-link" href="?page=<%= nextPage %>" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        <% }  %>
+    </ul>
+</nav>
 <% } else {%>
 <div class="alert alert-danger" role="alert">暂无产品</div>
 <% }%>

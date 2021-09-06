@@ -3,9 +3,22 @@ const Order = require("../models/order");
 const path = require("path");
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
+const ITEMS_PER_PAGE = 6;
+let totalItems = 0;
 
 exports.getProducts = (req, res, next) => {
+  // page當前頁數
+  const page = +req.query.page || 1;
   Product.find()
+    .countDocuments()
+    .then((numProducts) => {
+      totalItems = numProducts;
+      // 商品總數/每頁顯示量 => 總頁數
+      totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      return Product.find()
+        .skip((page - 1) * ITEMS_PER_PAGE)
+        .limit(ITEMS_PER_PAGE);
+    })
     .then((products) => {
       res.render("shop/product-list", {
         prods: products,
@@ -15,6 +28,14 @@ exports.getProducts = (req, res, next) => {
           { name: "首页", url: "/", hasBreadcrumbUrl: true },
           { name: "产品中心", hasBreadcrumbUrl: false },
         ],
+        totalItems,
+        totalPages,
+        hasNextPage: ITEMS_PER_PAGE * page < totalItems,
+        hasPrePage: page > 1,
+        nextPage: page + 1,
+        prevPage: page - 1,
+        firstPage: 1,
+        currentPage: page,
       });
     })
     .catch((err) => {
@@ -25,10 +46,18 @@ exports.getProducts = (req, res, next) => {
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.find()
+  const page = +req.query.page || 1;
+  // 設定.pagation()回傳名稱
+  const customLabels = {
+    totalDocs: "totalItems",
+    page: "currentPage",
+    docs: "prods",
+  };
+
+  Product.paginate({}, { page, limit: ITEMS_PER_PAGE, customLabels })
     .then((products) => {
       res.render("shop/index", {
-        prods: products,
+        ...products,
         docTitle: "商城",
         activeShop: true,
         breadcrumb: [

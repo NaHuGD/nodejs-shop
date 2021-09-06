@@ -56,8 +56,6 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const userId = req.user;
 
-  console.log(image);
-
   if (!image) {
     // 未產生圖片
     return res.status(422).render("admin/edit-product", {
@@ -125,7 +123,6 @@ exports.postEditProduct = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    console.log("qweqweqweq", errors.array());
     return res.status(422).render("admin/edit-product", {
       docTitle: "修改产品",
       activeProductManage: true,
