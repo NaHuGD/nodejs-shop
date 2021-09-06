@@ -172,8 +172,8 @@ exports.postEditProduct = (req, res, next) => {
     });
 };
 
-exports.postDeleteProduct = (req, res, next) => {
-  const productId = req.body.productId;
+exports.deleteProduct = (req, res, next) => {
+  const productId = req.params.productId;
 
   Product.findById(productId)
     .then((product) => {
@@ -187,14 +187,36 @@ exports.postDeleteProduct = (req, res, next) => {
       return Product.deleteOne({ _id: productId, userId: req.user._id });
     })
     .then((result) => {
-      res.redirect("/admin/products");
+      res.json({ message: "success", ...result });
     })
     .catch((err) => {
-      const error = new Error(`刪除商品err: ${err}`);
-      error.httpStatuCode = 500;
-      return next(error);
+      res.json({ message: "fail" });
     });
 };
+
+// exports.postDeleteProduct = (req, res, next) => {
+//   const productId = req.body.productId;
+
+//   Product.findById(productId)
+//     .then((product) => {
+//       // 判斷是否有產品 在刪除圖片
+//       if (!product) {
+//         next(new Error("未找到產品"));
+//       }
+
+//       fileHelper.deleteFile(product.imageUrl);
+//       // 產品及用戶ID都匹配才能刪除
+//       return Product.deleteOne({ _id: productId, userId: req.user._id });
+//     })
+//     .then((result) => {
+//       res.redirect("/admin/products");
+//     })
+//     .catch((err) => {
+//       const error = new Error(`刪除商品err: ${err}`);
+//       error.httpStatuCode = 500;
+//       return next(error);
+//     });
+// };
 
 exports.getProducts = (req, res, next) => {
   Product.find({ userId: req.user._id })
