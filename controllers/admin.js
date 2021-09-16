@@ -2,6 +2,7 @@ const Product = require("../models/product");
 const User = require("../models/user");
 const { validationResult } = require("express-validator");
 const fileHelper = require("../util/fileHelper");
+const io = require("../socket");
 
 exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -104,6 +105,14 @@ exports.postAddProduct = (req, res, next) => {
   product
     .save()
     .then((result) => {
+      io.getIO().emit("post-new-product", {
+        action: "create",
+        product: {
+          ...result._doc,
+        },
+        creator: { _id: req.user, email: req.user.email },
+      });
+
       res.redirect("/admin/products");
     })
     .catch((err) => {

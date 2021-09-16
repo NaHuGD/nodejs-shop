@@ -129,8 +129,18 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then((result) => {
-    app.listen(3000, () => {
+    const server = app.listen(3000, () => {
       console.log("App listening on port 3000!");
+    });
+    // socket
+    const io = require("./socket").init(server);
+    io.on("connection", (socket) => {
+      socket.on("send-to-all-client-message", (data) => {
+        
+        // 發送消息給client端
+        socket.emit('server-to-client-message', data)
+      });
+      console.log("client connected, 客戶端以連結");
     });
   })
   .catch((err) => console.log("mongoose連結異常", err));
