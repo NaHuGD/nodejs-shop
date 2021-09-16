@@ -57,4 +57,31 @@ router.post("/reset", authController.postReset);
 
 router.post("/new-password", authController.postNewPassword);
 
+router.get("/user-order-count", authController.getUserOrderCount);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports = router;

@@ -1,28 +1,27 @@
 <%- include('../includes/header.ejs')%>
 
-    <h1>订单管理</h1>
-    <% if(orders.length>0){ %>
+<h1>订单管理</h1>
+<% if(orders.length>0){ %>
 
-        <ul class="list-group">
-
-            <% orders.forEach(function(order){%>
-                <li class="list-group-item active">
-                    <%= order._id %><a href="/checkout/<%= order._id %>" class="btn btn-warning">發貨單</a>
-
-                        <% order.products.forEach(function(p){ %>
+<ul class="list-group">
+    <% orders.forEach(function(order){%>
+        <li class="list-group-item active">
+        <%= order._id %>
+        <a href="/checkout/<%= order._id %>" class="btn btn-warning">發貨單</a>
+        <span>&nbsp;</span>
+        <a href="/payment/<%= order._id %>" class="btn btn-success">支付訂單</a>
+            <% order.products.forEach(function(p){ %>
                 <li class="list-group-item">
                     <%= p.product.title %>
-                        <%= p.quantity %>
+                    <%= p.quantity %>
                 </li>
-                <%})%>
+            <%})%>
+        </li>
+    <%})%>
+</ul>
 
-                    </li>
-                    <%})%>
+<% } else{ %>
+    <h5>暂无订单内容</h5>
+<% } %>
 
-        </ul>
-
-        <% } else{ %>
-            <h5>暂无订单内容</h5>
-            <% } %>
-
-                <%- include('../includes/footer.ejs')%>
+<%- include('../includes/footer.ejs')%>

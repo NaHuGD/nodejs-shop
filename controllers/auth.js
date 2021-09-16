@@ -1,7 +1,7 @@
 const User = require("../models/user");
+const Order = require("../models/order");
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
-
 // node提規模快 => 隨機生成加密數
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
@@ -266,5 +266,21 @@ exports.postNewPassword = (req, res, next) => {
         .catch((err) => {
           console.log("修改密碼err", err);
         });
+    });
+};
+
+exports.getUserOrderCount = (req, res, next) => {
+  User.find()
+    .lean()
+    .then(async (users) => {
+      for (let i = 0; i < users.length; i++) {
+        const number = await Order.find({
+          "user.userId": users[i]._id,
+        }).countDocuments();
+
+        users[i].userOrderCount = await number;
+      }
+
+      res.json(users);
     });
 };
